@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>The Pacific Islands</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
+    background: #000;
+    overflow: hidden;
+    height: 100vh;
+    height: 100dvh;
+    overscroll-behavior: none;
+    touch-action: none;
+    font-family: 'Noto Sans', sans-serif;
+  }
+
+  #app {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.9s ease;
+    z-index: 1;
+  }
+  .scene.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    z-index: 2;
+  }
+  .scene.fading-out {
+    opacity: 0;
+    visibility: visible;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ============== OPENING SCENE ============== */
+  #scene-opening #stage-opening {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+  }
+  #scene-opening img.bg {
+    position: absolute; left: 0; top: 0;
+    width: 100%; height: 100%;
+    object-fit: fill;
+    z-index: 4;
+    display: block;
+    pointer-events: none;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  #dove {
+    position: absolute;
+    width: 15.63%;
+    height: 18.52%;
+    z-index: 7;
+    left: 16.9%;
+    top: 86.8%;
+    transform: translate(-50%, -50%) scale(1);
+    will-change: left, top, transform;
+  }
+  #dove img {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    height: 100%;
+  }
+  #dove .wing-down { opacity: 1; }
+  #dove .wing-up   { opacity: 0; }
+
+  #soundToggle {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(15, 18, 22, 0.55);
+    border: 1px solid rgba(255,255,255,0.75);
+    color: #fff;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 999;
+    backdrop-filter: blur(2px);
+    transition: background 0.15s ease;
+  }
+  #soundToggle:hover { background: rgba(15,18,22,0.8); }
+
+  #openingHint {
+    position: absolute;
+    left: 50%;
+    bottom: 6%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    opacity: 0.9;
+    z-index: 8;
+    animation: pulse 1.8s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+  }
+
+  /* ============== ISLANDS SCENE ============== */
+  #frame {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+    touch-action: none;
+    overscroll-behavior: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  #stage {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+  #stage img {
+    display: block;
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    pointer-events: none;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  .seam {
+    position: absolute;
+    top: 0; height: 100%;
+    pointer-events: none;
+    z-index: 10;
+    background: linear-gradient(
+      to right,
+      rgba(120,190,225,0) 0%,
+      rgba(120,190,225,0.55) 45%,
+      rgba(120,190,225,0.55) 55%,
+      rgba(120,190,225,0) 100%
+    );
+    filter: blur(6px);
+    mix-blend-mode: soft-light;
+  }
+  #boatWrap {
+    position: absolute;
+    top: 71.39%;
+    width: 8%;
+    height: 18.52%;
+    z-index: 5;
+    will-change: transform;
+  }
+  #boat {
+    width: 100%; height: 100%;
+    will-change: transform;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  .hitlayer {
+    position: absolute;
+    top: 0; left: 0;
+    pointer-events: none;
+  }
+  .hitlayer polygon {
+    fill: rgba(255,255,255,0);
+    stroke: none;
+    pointer-events: auto;
+    cursor: pointer;
+    transition: fill 0.18s ease;
+  }
+  .hitlayer polygon:hover {
+    fill: rgba(255, 209, 102, 0.38);
+  }
+  #islandTooltip {
+    position: fixed;
+    top: 0; left: 0;
+    transform: translate(-50%, -130%);
+    background: rgba(15, 18, 22, 0.8);
+    border: 1px solid rgba(255,255,255,0.75);
+    border-radius: 4px;
+    padding: 6px 12px;
+    color: #ffffff;
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 90;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+  }
+  #islandTooltip.show { opacity: 1; }
+
+  #islandPanel {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(20px) scale(0.96);
+    width: min(92vw, 620px);
+    background: rgba(15, 18, 22, 0.62);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255,255,255,0.75);
+    border-radius: 4px;
+    padding: 24px 30px 22px;
+    color: #ffffff;
+    font-family: 'Noto Sans', sans-serif;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    box-sizing: border-box;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.45);
+  }
+  #islandPanel::before,
+  #islandPanel::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+  }
+  #islandPanel::before {
+    top: -1px; left: -1px;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+  }
+  #islandPanel::after {
+    bottom: -1px; right: -1px;
+    border-bottom: 2px solid #ffffff;
+    border-right: 2px solid #ffffff;
+  }
+  #islandPanel.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  #islandPanel h2 {
+    margin: 0 0 14px 0;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+  }
+  #islandPanel p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.65;
+    color: #f0f0f0;
+    font-weight: 400;
+    letter-spacing: 0.1px;
+  }
+  #islandPanel .closeBtn {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 26px; height: 26px;
+    border-radius: 0;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.75);
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1;
+    text-align: center;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+  }
+  #islandPanel .closeBtn:hover {
+    background: rgba(255,255,255,0.18);
+  }
+
+  #islandsHint {
+    position: absolute;
+    left: 50%;
+    bottom: 4%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.4px;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    opacity: 0.75;
+    z-index: 8;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  /* ============== CLOSING SCENE ============== */
+  #scene-closing {
+    background: #000;
+  }
+  #scene-closing img.closing-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+</style>
+</head>
+<body>
+<audio id="bgSound" src="back_sound.mp3" loop preload="auto"></audio>
+<button id="soundToggle" aria-label="Toggle sound">🔊</button>
+
+<div id="app">
+
+  <!-- ============== SCENE 1: OPENING ============== -->
+  <section id="scene-opening" class="scene active">
+    <div id="stage-opening">
+      <img class="bg" src="front.png" alt="front">
+      <div id="dove">
+        <img class="wing-down" src="dove_down.png" alt="dove down">
+        <img class="wing-up"   src="dove2.png"      alt="dove up">
+      </div>
+      <div id="openingHint">Scroll to begin your journey ▸</div>
+    </div>
+  </section>
+
+  <!-- ============== SCENE 2: ISLANDS ============== -->
+  <section id="scene-islands" class="scene">
+    <div id="frame">
+      <div id="stage"></div>
+      <div id="boatWrap">
+        <img id="boat" src="boat.png" alt="boat">
+      </div>
+    </div>
+    <div id="islandTooltip"></div>
+    <div id="islandPanel">
+      <button class="closeBtn" id="islandPanelClose">✕</button>
+      <h2 id="islandPanelTitle">Island Name</h2>
+      <p id="islandPanelDesc">Island description.</p>
+    </div>
+    <div id="islandsHint">Keep scrolling to sail onward ▸</div>
+  </section>
+
+  <!-- ============== SCENE 3: CLOSING ============== -->
+  <section id="scene-closing" class="scene">
+    <img class="closing-bg" src="closing.png" alt="Thank you">
+  </section>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var sceneOpening = document.getElementById('scene-opening');
+  var sceneIslands  = document.getElementById('scene-islands');
+  var sceneClosing  = document.getElementById('scene-closing');
+
+  var CURRENT = 'opening'; // opening | islands | closing
+  var transitioning = false;
+
+  /* =========================================================
+     BACKGROUND SOUND
+  ========================================================= */
+  var bgSound = document.getElementById('bgSound');
+  var soundToggle = document.getElementById('soundToggle');
+  var soundMuted = false;
+  bgSound.volume = 0.5;
+
+  function tryPlaySound() {
+    if (soundMuted) return;
+    var p = bgSound.play();
+    if (p && p.catch) p.catch(function () { /* wait for user gesture */ });
+  }
+  function startSoundOnGesture() {
+    tryPlaySound();
+    window.removeEventListener('pointerdown', startSoundOnGesture);
+    window.removeEventListener('wheel', startSoundOnGesture);
+    window.removeEventListener('touchstart', startSoundOnGesture);
+    window.removeEventListener('keydown', startSoundOnGesture);
+  }
+  window.addEventListener('pointerdown', startSoundOnGesture, { passive: true });
+  window.addEventListener('wheel', startSoundOnGesture, { passive: true });
+  window.addEventListener('touchstart', startSoundOnGesture, { passive: true });
+  window.addEventListener('keydown', startSoundOnGesture);
+  tryPlaySound();
+
+  soundToggle.addEventListener('click', function () {
+    soundMuted = !soundMuted;
+    if (soundMuted) {
+      bgSound.pause();
+      soundToggle.textContent = '🔇';
+    } else {
+      soundToggle.textContent = '🔊';
+      tryPlaySound();
+    }
+  });
+
+  function switchScene(from, to) {
+    if (transitioning) return;
+    transitioning = true;
+    from.classList.remove('active');
+    from.classList.add('fading-out');
+    to.classList.add('active');
+    setTimeout(function () {
+      from.classList.remove('fading-out');
+      transitioning = false;
+    }, 950);
+  }
+
+  /* =========================================================
+     SCENE 1 — OPENING (dove flight along a path)
+  ========================================================= */
+  var openingAPI = (function opening() {
+    var PATH = [
+      { left: 16.9, top: 86.8, scale: 1.00 },
+      { left: 34.0, top: 81.7, scale: 0.94 },
+      { left: 50.2, top: 76.9, scale: 0.88 },
+      { left: 60.7, top: 72.5, scale: 0.82 },
+      { left: 72.2, top: 67.1, scale: 0.76 },
+      { left: 84.5, top: 58.0, scale: 0.68 },
+      { left: 96.1, top: 47.8, scale: 0.60 },
+      { left: 99.7, top: 42.3, scale: 0.56 }
+    ];
+
+    var dove = document.getElementById('dove');
+    var wingDown = document.querySelector('#dove .wing-down');
+    var wingUp   = document.querySelector('#dove .wing-up');
+    var hint = document.getElementById('openingHint');
+
+    var progress = 0;
+    var moveTimeout = null;
+    var flapInterval = null;
+    var showingDown = true;
+    var overscroll = 0;
+    var OVER_THRESHOLD = 260;
+    var SCROLL_PER_FULL_PATH = 2000;
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    function render() {
+      var clamped = Math.max(0, Math.min(PATH.length - 1, progress));
+      var i0 = Math.floor(clamped);
+      var i1 = Math.min(PATH.length - 1, i0 + 1);
+      var t = clamped - i0;
+
+      var p0 = PATH[i0];
+      var p1 = PATH[i1];
+
+      var left = lerp(p0.left, p1.left, t);
+      var top = lerp(p0.top, p1.top, t);
+      var scale = lerp(p0.scale, p1.scale, t);
+
+      dove.style.left = left + '%';
+      dove.style.top = top + '%';
+      dove.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
+
+      if (clamped >= PATH.length - 1) {
+        hint.style.opacity = '0';
+      } else {
+        hint.style.opacity = '';
+      }
+    }
+
+    function startFlapping() {
+      if (flapInterval) return;
+      flapInterval = setInterval(function () {
+        showingDown = !showingDown;
+        wingDown.style.opacity = showingDown ? 1 : 0;
+        wingUp.style.opacity = showingDown ? 0 : 1;
+      }, 140);
+    }
+
+    function stopFlapping() {
+      clearInterval(flapInterval);
+      flapInterval = null;
+      showingDown = true;
+      wingDown.style.opacity = 1;
+      wingUp.style.opacity = 0;
+    }
+
+    function onWheel(e) {
+      if (CURRENT !== 'opening') return;
+      e.preventDefault();
+
+      var dy = e.deltaY;
+      var maxStep = 120;
+      dy = Math.max(-maxStep, Math.min(maxStep, dy));
+
+      var atEnd = progress >= PATH.length - 1;
+
+      if (atEnd && dy > 0) {
+        overscroll += dy;
+        if (overscroll >= OVER_THRESHOLD) {
+          overscroll = 0;
+          CURRENT = 'islands';
+          switchScene(sceneOpening, sceneIslands);
+          islandsAPI.activate(false);
+          return;
+        }
+      } else {
+        overscroll = 0;
+      }
+
+      progress += dy / SCROLL_PER_FULL_PATH * (PATH.length - 1);
+      progress = Math.max(0, Math.min(PATH.length - 1, progress));
+      render();
+
+      startFlapping();
+      clearTimeout(moveTimeout);
+      moveTimeout = setTimeout(stopFlapping, 150);
+    }
+
+    document.addEventListener('wheel', onWheel, { passive: false });
+
+    // basic touch support: swipe up to advance the dove
+    var touchStartY = null;
+    document.addEventListener('touchstart', function (e) {
+      if (CURRENT !== 'opening') return;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchmove', function (e) {
+      if (CURRENT !== 'opening' || touchStartY === null) return;
+      e.preventDefault();
+      var y = e.touches[0].clientY;
+      var dy = (touchStartY - y) * 1.6;
+      touchStartY = y;
+
+      var atEnd = progress >= PATH.length - 1;
+      if (atEnd && dy > 0) {
+        overscroll += dy;
+        if (overscroll >= OVER_THRESHOLD) {
+          overscroll = 0;
+          CURRENT = 'islands';
+          switchScene(sceneOpening, sceneIslands);
+          islandsAPI.activate(false);
+          return;
+        }
+      } else {
+        overscroll = 0;
+      }
+
+      progress += dy / SCROLL_PER_FULL_PATH * (PATH.length - 1);
+      progress = Math.max(0, Math.min(PATH.length - 1, progress));
+      render();
+      startFlapping();
+      clearTimeout(moveTimeout);
+      moveTimeout = setTimeout(stopFlapping, 150);
+    }, { passive: false });
+    document.addEventListener('touchend', function () { touchStartY = null; });
+
+    render();
+
+    return {
+      enterFromIslands: function () {
+        progress = PATH.length - 1;
+        overscroll = 0;
+        render();
+      }
+    };
+  })();
+
+  /* =========================================================
+     SCENE 2 — ISLANDS (scrolling map with boat + clickable islands)
+  ========================================================= */
+  var islandsAPI = (function islands() {
+    var frame = document.getElementById('frame');
+    var stage = document.getElementById('stage');
+    var boatWrap = document.getElementById('boatWrap');
+    var boat = document.getElementById('boat');
+    var hint = document.getElementById('islandsHint');
+
+    var IMAGE_SOURCES = ['1.png', '2.png', '3.png', 'last.png'];
+
+    var ISLAND_DATA = [
+      { image: '1.png', name: 'American Samoa', points: [[9.1,41.1],[0.7,53.8],[0.3,63.2],[12.3,66.5],[19.8,56.5],[9.0,40.9]] },
+      { image: '1.png', name: 'Fiji', points: [[26.1,46.1],[21.7,48.8],[18.6,61.5],[24.2,63.5],[31.3,62.9],[36.1,61.5],[38.0,56.8],[36.0,51.7],[33.6,50.0],[31.2,48.3],[26.2,45.9]] },
+      { image: '1.png', name: 'French Polynesia', points: [[50.8,39.1],[39.1,57.5],[47.3,61.2],[53.4,60.8],[58.9,58.2],[59.8,55.1],[60.0,52.0],[50.9,39.2]] },
+      { image: '1.png', name: 'Guam', points: [[66.6,42.4],[61.9,51.1],[55.9,64.5],[67.8,67.2],[78.2,68.9],[83.2,64.2],[75.2,51.0],[66.6,42.6]] },
+      { image: '1.png', name: 'Kiribati', points: [[89.5,49.1],[83.3,48.8],[81.8,62.5],[87.3,67.5],[92.8,67.5],[95.8,61.9],[99.2,58.1],[89.4,49.7]] },
+
+      { image: '2.png', name: 'Marshall Islands', points: [[12.0,40.4],[1.6,62.8],[12.4,66.3],[17.4,62.8]] },
+      { image: '2.png', name: 'Micronesia, Federated States of', points: [[30.1,38.1],[22.5,47.4],[18.7,66.7],[27.1,72.5],[35.7,72.8],[43.3,66.5],[36.5,46.6],[30.1,38.5]] },
+      { image: '2.png', name: 'Nauru', points: [[50.0,43.9],[44.2,58.9],[50.3,65.1],[56.5,59.3],[50.3,43.9]] },
+      { image: '2.png', name: 'New Caledonia', points: [[65.9,36.5],[57.9,64.0],[66.7,69.8],[76.7,63.2],[65.8,35.8]] },
+      { image: '2.png', name: 'Northern Mariana Islands', points: [[89.1,43.1],[80.6,52.8],[79.1,65.5],[87.9,71.3],[99.7,65.5],[88.7,42.7]] },
+
+      { image: '3.png', name: 'Palau', points: [[10.1,43.5],[1.0,57.1],[9.9,61.8],[19.9,55.7],[10.2,43.5]] },
+      { image: '3.png', name: 'Papua New Guinea', points: [[31.0,39.7],[19.8,59.2],[30.0,64.2],[45.2,58.5],[30.9,39.5]] },
+      { image: '3.png', name: 'Samoa', points: [[50.1,44.6],[46.1,53.1],[46.6,56.2],[58.4,55.5],[59.8,52.4],[56.9,45.6],[50.0,44.6]] },
+      { image: '3.png', name: 'Solomon Islands', points: [[69.3,36.6],[60.3,54.3],[53.6,60.4],[63.8,66.1],[78.0,64.7],[81.7,55.5],[69.4,36.5]] },
+      { image: '3.png', name: 'Tonga', points: [[88.1,46.1],[82.9,59.0],[91.3,66.1],[99.1,57.6],[88.1,45.1]] },
+
+      { image: 'last.png', name: 'Tuvalu', points: [[13.4,44.9],[3.7,61.1],[13.0,66.4],[28.2,62.3],[13.4,44.7]] },
+      { image: 'last.png', name: 'Vanuatu', points: [[65.4,41.4],[28.3,58.8],[33.5,66.0],[77.4,65.0],[85.7,61.6],[64.8,41.4]] },
+    ];
+
+    var ISLAND_FACTS = {
+      'American Samoa': 'An unincorporated U.S. territory made up of five volcanic islands and two coral atolls. Its capital is Pago Pago, home to one of the deepest natural harbors in the South Pacific. Residents are U.S. nationals but not automatically U.S. citizens. The islands are also home to the National Park of American Samoa, the only U.S. national park south of the equator.',
+      'Fiji': 'An archipelago of over 330 islands, only about a third of which are inhabited. Fiji is known for its coral reefs, rainforests, and status as a hub for South Pacific diplomacy and rugby, a sport the nation is fiercely proud of, having won Olympic gold in rugby sevens in 2016 and 2020.',
+      'French Polynesia': 'An overseas collectivity of France comprising 118 islands and atolls, including Tahiti, Bora Bora, and the Marquesas. Famous for its overwater bungalows, black pearl cultivation, and the arrival of explorers and artists like Paul Gauguin, who lived and painted here in the late 19th century.',
+      'Guam': 'The largest and southernmost island in the Micronesia region, and an unincorporated U.S. territory. Guam hosts major U.S. military bases and is known as "Where America\'s Day Begins" because it sits just west of the International Date Line.',
+      'Kiribati': 'A nation of 33 atolls and reef islands spread across all four hemispheres, the only country to do so. Kiribati is on the front line of climate change, with rising sea levels threatening to submerge much of its low-lying land within decades.',
+      'Marshall Islands': 'A chain of coral atolls and islands, best known internationally for Bikini Atoll, site of U.S. nuclear weapons testing in the 1940s-50s. The Marshall Islands has one of the largest exclusive economic zones in the world relative to its tiny land area.',
+      'Micronesia, Federated States of': 'A federation of four states — Yap, Chuuk, Pohnpei, and Kosrae — spread across the western Pacific. Chuuk Lagoon is world-renowned among divers for its WWII shipwrecks, while Yap is famous for its traditional stone money, or "rai."',
+      'Nauru': 'The world\'s third-smallest country by area and the smallest island nation. Once one of the richest countries per capita thanks to phosphate mining, Nauru\'s economy collapsed after reserves were depleted, leaving much of the island\'s interior environmentally scarred.',
+      'New Caledonia': 'A French special collectivity known for having one of the largest lagoons in the world, a UNESCO World Heritage site. It holds roughly a quarter of the world\'s known nickel resources and has a distinct blend of Kanak (Melanesian) and French culture.',
+      'Northern Mariana Islands': 'A U.S. commonwealth made up of 14 islands, including Saipan and Tinian. The Mariana Trench, the deepest point in the world\'s oceans, lies nearby. Tinian was the launch site for the B-29 bombers that dropped the atomic bombs in 1945.',
+      'Palau': 'An archipelago celebrated for having some of the richest marine biodiversity on Earth. Its famous Jellyfish Lake is home to millions of stingless jellyfish, and Palau was the first country to establish a shark sanctuary within its waters.',
+      'Papua New Guinea': 'The largest and most populous Pacific Island nation, home to over 800 languages — more than any other country on Earth. Its terrain ranges from dense rainforest and highlands to active volcanoes, and it retains hundreds of distinct indigenous cultures.',
+      'Samoa': 'A Polynesian nation of two main islands, Upolu and Savai\'i, known for preserving the "fa\'a Samoa" (the Samoan way) of communal village life and chiefly titles. Samoa was also the first country to see the sunrise after switching sides of the International Date Line in 2011.',
+      'Solomon Islands': 'A nation of nearly 1,000 islands that was the site of major WWII battles, including Guadalcanal. It has extraordinary marine biodiversity and remains one of the least explored countries for tourism in the Pacific.',
+      'Tonga': 'The only Pacific nation never formally colonized by a foreign power, ruled by an unbroken line of monarchs for over 1,000 years. Tonga is famous for humpback whale swimming tours and sits atop the Tonga Trench, one of the deepest ocean trenches on Earth.',
+      'Tuvalu': 'One of the smallest and most climate-vulnerable countries in the world, with a highest point of just about 4.6 meters above sea level. Tuvalu has become a global symbol of the fight against sea-level rise and has explored creating a "digital nation" to preserve its identity.',
+      'Vanuatu': 'An archipelago of over 80 islands known for active volcanoes, including Mount Yasur, one of the most accessible volcanoes on Earth. Vanuatu is often ranked among the happiest places in the world and is the birthplace of the original bungee jump, adapted from the traditional land diving ritual of Pentecost Island.'
+    };
+
+    var islandTooltip = document.getElementById('islandTooltip');
+    function showIslandTooltip(name, x, y) {
+      islandTooltip.textContent = name;
+      islandTooltip.style.left = x + 'px';
+      islandTooltip.style.top = y + 'px';
+      islandTooltip.classList.add('show');
+    }
+    function moveIslandTooltip(x, y) {
+      islandTooltip.style.left = x + 'px';
+      islandTooltip.style.top = y + 'px';
+    }
+    function hideIslandTooltip() {
+      islandTooltip.classList.remove('show');
+    }
+
+    var islandPanel = document.getElementById('islandPanel');
+    var islandPanelTitle = document.getElementById('islandPanelTitle');
+    var islandPanelDesc = document.getElementById('islandPanelDesc');
+    var islandPanelClose = document.getElementById('islandPanelClose');
+
+    function showIslandPanel(name) {
+      islandPanelTitle.textContent = name;
+      islandPanelDesc.textContent = ISLAND_FACTS[name] || 'More information about ' + name + ' coming soon.';
+      islandPanel.classList.add('show');
+    }
+    function hideIslandPanel() {
+      islandPanel.classList.remove('show');
+    }
+    islandPanelClose.addEventListener('click', hideIslandPanel);
+
+    var stageWidth = 0;
+    var bgMaxScroll = 0;
+    var virtualMax = 0;
+    var SCROLL_LENGTH_MULT = 2.4;
+    var SEAM_OVERLAP = 140;
+
+    var imgEls = IMAGE_SOURCES.map(function (src, i) {
+      var img = document.createElement('img');
+      img.src = src;
+      img.alt = 'Pulau ' + (i + 1);
+      img.style.zIndex = String(i + 1);
+      stage.appendChild(img);
+      if (i > 0) {
+        var seam = document.createElement('div');
+        seam.className = 'seam';
+        seam.style.zIndex = String(20 + i);
+        stage.appendChild(seam);
+        img._seam = seam;
+      }
+      return img;
+    });
+
+    var settleCount = 0;
+    var readyFired = false;
+    function tryReady() {
+      if (readyFired) return;
+      readyFired = true;
+      fitStageToImages();
+    }
+    function onSettle() {
+      settleCount++;
+      if (settleCount >= imgEls.length) tryReady();
+    }
+    imgEls.forEach(function (img) {
+      img.addEventListener('load', onSettle);
+      img.addEventListener('error', onSettle);
+      if (img.complete && img.naturalWidth) onSettle();
+    });
+    setTimeout(tryReady, 1500);
+
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+    function fitStageToImages() {
+      var frameH = frame.clientHeight;
+      var frameW = frame.clientWidth;
+      var cursor = 0;
+
+      imgEls.forEach(function (img, i) {
+        var ratio = (img.naturalWidth && img.naturalHeight)
+          ? (img.naturalWidth / img.naturalHeight) : 0;
+
+        if (!ratio) {
+          img.style.display = 'none';
+          if (img._seam) img._seam.style.display = 'none';
+          return;
+        }
+        img.style.display = '';
+
+        var w = frameH * ratio;
+        var x = (i === 0) ? 0 : (cursor - SEAM_OVERLAP);
+
+        img.style.width = w + 'px';
+        img.style.left = x + 'px';
+
+        if (i > 0) {
+          img.style.maskImage =
+            'linear-gradient(to right, rgba(0,0,0,0) 0, rgba(0,0,0,1) ' + SEAM_OVERLAP + 'px)';
+          img.style.webkitMaskImage = img.style.maskImage;
+
+          if (img._seam) {
+            img._seam.style.left = x + 'px';
+            img._seam.style.width = (SEAM_OVERLAP * 2) + 'px';
+          }
+        }
+
+        cursor = x + w;
+      });
+
+      buildHitLayers();
+
+      stageWidth = cursor;
+      stage.style.width = stageWidth + 'px';
+
+      bgMaxScroll = Math.max(0, stageWidth - frameW);
+      virtualMax = Math.max(frameW, bgMaxScroll * SCROLL_LENGTH_MULT);
+
+      target = clamp(target, 0, virtualMax);
+    }
+
+    function buildHitLayers() {
+      stage.querySelectorAll('.hitlayer').forEach(function (el) { el.remove(); });
+
+      imgEls.forEach(function (img, i) {
+        var src = IMAGE_SOURCES[i];
+        var isls = ISLAND_DATA.filter(function (d) { return d.image === src; });
+        if (!isls.length || img.style.display === 'none') return;
+
+        var svgNS = 'http://www.w3.org/2000/svg';
+        var svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('class', 'hitlayer');
+        svg.setAttribute('viewBox', '0 0 100 100');
+        svg.setAttribute('preserveAspectRatio', 'none');
+        svg.style.left = img.style.left;
+        svg.style.width = img.style.width;
+        svg.style.height = '100%';
+        svg.style.zIndex = String(50 + i);
+
+        isls.forEach(function (isl) {
+          var poly = document.createElementNS(svgNS, 'polygon');
+          poly.setAttribute('points', isl.points.map(function (p) { return p[0] + ',' + p[1]; }).join(' '));
+          poly.addEventListener('click', function (e) {
+            e.stopPropagation();
+            showIslandPanel(isl.name);
+          });
+          poly.addEventListener('pointerenter', function (e) {
+            showIslandTooltip(isl.name, e.clientX, e.clientY);
+          });
+          poly.addEventListener('pointermove', function (e) {
+            moveIslandTooltip(e.clientX, e.clientY);
+          });
+          poly.addEventListener('pointerleave', hideIslandTooltip);
+          svg.appendChild(poly);
+        });
+
+        stage.appendChild(svg);
+      });
+    }
+
+    window.addEventListener('resize', function () {
+      if (readyFired) fitStageToImages();
+    });
+
+    var target = 0;
+    var current = 0;
+    var EASE = 0.07;
+    var overscroll = 0;
+    var OVER_THRESHOLD = 420;
+
+    function normalizeWheelDelta(e) {
+      var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (e.deltaMode === 1) d *= 16;
+      else if (e.deltaMode === 2) d *= frame.clientWidth;
+      return d;
+    }
+
+    var userActive = false;
+
+    var overscrollBack = 0;
+
+    function goToClosing() {
+      CURRENT = 'closing';
+      switchScene(sceneIslands, sceneClosing);
+    }
+    function goToOpening() {
+      CURRENT = 'opening';
+      openingAPI.enterFromIslands();
+      switchScene(sceneIslands, sceneOpening);
+    }
+
+    frame.addEventListener('wheel', function (e) {
+      if (CURRENT !== 'islands') return;
+      e.preventDefault();
+      var d = normalizeWheelDelta(e);
+
+      var atEnd = target >= virtualMax - 1;
+      var atStart = target <= 0;
+
+      if (atEnd && d > 0) {
+        overscroll += d;
+        hint.style.opacity = '1';
+        if (overscroll >= OVER_THRESHOLD) {
+          overscroll = 0;
+          goToClosing();
+          return;
+        }
+      } else {
+        overscroll = 0;
+      }
+
+      if (atStart && d < 0) {
+        overscrollBack += -d;
+        if (overscrollBack >= OVER_THRESHOLD) {
+          overscrollBack = 0;
+          goToOpening();
+          return;
+        }
+      } else {
+        overscrollBack = 0;
+      }
+
+      target = clamp(target + d, 0, virtualMax);
+      userActive = true;
+    }, { passive: false });
+
+    var isDown = false, startX = 0, startTarget = 0;
+    frame.addEventListener('pointerdown', function (e) {
+      if (CURRENT !== 'islands') return;
+      if (e.target.closest && e.target.closest('.hitlayer polygon, polygon')) return;
+      isDown = true;
+      startX = e.clientX;
+      startTarget = target;
+      userActive = true;
+      frame.setPointerCapture(e.pointerId);
+    });
+    frame.addEventListener('pointermove', function (e) {
+      if (!isDown) return;
+      var dx = e.clientX - startX;
+      target = clamp(startTarget - dx, 0, virtualMax);
+    });
+    function endDrag() {
+      if (!isDown) return;
+      isDown = false;
+      userActive = false;
+      if (target >= virtualMax - 1) {
+        overscroll += OVER_THRESHOLD * 0.6;
+        if (overscroll >= OVER_THRESHOLD) {
+          overscroll = 0;
+          goToClosing();
+        }
+      } else if (target <= 0) {
+        overscrollBack += OVER_THRESHOLD * 0.6;
+        if (overscrollBack >= OVER_THRESHOLD) {
+          overscrollBack = 0;
+          goToOpening();
+        }
+      }
+    }
+    frame.addEventListener('pointerup', endDrag);
+    frame.addEventListener('pointercancel', endDrag);
+    frame.addEventListener('pointerleave', function () { if (isDown) endDrag(); });
+
+    frame.addEventListener('touchmove', function (e) {
+      if (CURRENT === 'islands') e.preventDefault();
+    }, { passive: false });
+
+    var t = 0;
+    var lastFrame = performance.now();
+
+    function loop(now) {
+      var dt = Math.min(48, now - lastFrame) / 16.6667;
+      lastFrame = now;
+
+      var ease = 1 - Math.pow(1 - EASE, dt);
+      current += (target - current) * ease;
+
+      if (!userActive && Math.abs(target - current) < 0.5) {
+        current = target;
+      }
+
+      var progress = virtualMax > 0 ? clamp(current / virtualMax, 0, 1) : 0;
+      var boatSceneX = progress * stageWidth;
+
+      var frameW = frame.clientWidth;
+      var cameraX = clamp(boatSceneX - frameW / 2, 0, bgMaxScroll);
+
+      stage.style.transform = 'translate3d(' + (-cameraX) + 'px,0,0)';
+
+      t += 0.04 * dt;
+      var bobY = Math.sin(t) * 3;
+      var tilt = Math.sin(t) * 1.2;
+
+      var boatScreenX = boatSceneX - cameraX;
+      boatWrap.style.transform = 'translate3d(' + boatScreenX + 'px,0,0)';
+      boat.style.transform = 'translate3d(0,' + bobY + 'px,0) rotate(' + tilt + 'deg)';
+
+      if (progress < 0.999) {
+        hint.style.opacity = '';
+      }
+
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    return {
+      activate: function (fromEnd) {
+        // ensure layout is measured now that the scene is visible
+        setTimeout(function () {
+          if (readyFired) fitStageToImages();
+          if (fromEnd) {
+            target = virtualMax;
+            current = virtualMax;
+          } else {
+            target = 0;
+            current = 0;
+          }
+          overscroll = 0;
+          overscrollBack = 0;
+        }, 50);
+      }
+    };
+  })();
+
+  /* =========================================================
+     SCENE 3 — CLOSING (scroll up to sail back to the islands)
+  ========================================================= */
+  (function closing() {
+    var overscrollBack = 0;
+    var OVER_THRESHOLD = 260;
+
+    function goBackToIslands() {
+      CURRENT = 'islands';
+      switchScene(sceneClosing, sceneIslands);
+      islandsAPI.activate(true);
+    }
+
+    sceneClosing.addEventListener('wheel', function (e) {
+      if (CURRENT !== 'closing') return;
+      e.preventDefault();
+      var d = normalizeDelta(e);
+      if (d < 0) {
+        overscrollBack += -d;
+        if (overscrollBack >= OVER_THRESHOLD) {
+          overscrollBack = 0;
+          goBackToIslands();
+        }
+      } else {
+        overscrollBack = 0;
+      }
+    }, { passive: false });
+
+    function normalizeDelta(e) {
+      var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      if (e.deltaMode === 1) d *= 16;
+      else if (e.deltaMode === 2) d *= window.innerWidth;
+      return d;
+    }
+
+    var touchStartY = null;
+    sceneClosing.addEventListener('touchstart', function (e) {
+      if (CURRENT !== 'closing') return;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    sceneClosing.addEventListener('touchmove', function (e) {
+      if (CURRENT !== 'closing' || touchStartY === null) return;
+      var y = e.touches[0].clientY;
+      var dy = y - touchStartY;
+      touchStartY = y;
+      if (dy > 0) {
+        overscrollBack += dy;
+        if (overscrollBack >= OVER_THRESHOLD) {
+          overscrollBack = 0;
+          goBackToIslands();
+        }
+      } else {
+        overscrollBack = 0;
+      }
+    }, { passive: true });
+    sceneClosing.addEventListener('touchend', function () { touchStartY = null; });
+  })();
+
+})();
+</script>
+</body>
+</html>
