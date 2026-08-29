@@ -435,6 +435,7 @@
 
   function tryPlaySound() {
     if (soundMuted) return;
+    bgSound.muted = false;
     var p = bgSound.play();
     if (p && p.catch) p.catch(function () { /* wait for user gesture */ });
   }
@@ -449,6 +450,14 @@
   window.addEventListener('wheel', startSoundOnGesture, { passive: true });
   window.addEventListener('touchstart', startSoundOnGesture, { passive: true });
   window.addEventListener('keydown', startSoundOnGesture);
+
+  // Browsers block autoplay with sound before any user interaction.
+  // Start muted right away (always allowed) so playback is already running
+  // and buffered — then unmute on the very first gesture above, so sound
+  // begins instantly instead of waiting for the audio to load/start.
+  bgSound.muted = true;
+  var mutedPlay = bgSound.play();
+  if (mutedPlay && mutedPlay.catch) mutedPlay.catch(function () {});
   tryPlaySound();
 
   soundToggle.addEventListener('click', function () {
